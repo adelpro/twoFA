@@ -1,0 +1,26 @@
+{
+  "name": "twfa-backend",
+  "version": "1.0.0",
+  "description": "2fa with google authenticator or authy implementation using NodeJs, Express, JavaScript",
+  "main": "server.js",
+  "keywords": [
+    "NodeJS",
+    "Express",
+    "JavaScript",
+    "2fa",
+    "authentication"
+  ],
+  "author": "adelpro",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3",
+    "speakeasy": "^2.0.0"
+  },
+  "scripts": {
+    "start": "node server",
+    "dev": "node --watch server"
+  }
+}
