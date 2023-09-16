@@ -8,5 +8,14 @@ async function generateTwoFAQRCode(secret) {
   const result = await qrcode.toDataURL(otpauthURL);
   return result;
 }
+function showCurrentTime() {
+  const currentTime = new Date();
+  const hours = currentTime.getHours();
+  const minutes = currentTime.getMinutes();
+  const seconds = currentTime.getSeconds();
 
-module.exports = { generateTwoFAQRCode };
+  const formattedTime = `${hours}:${minutes}:${seconds}`;
+
+  console.log(formattedTime);
+}
+module.exports = { generateTwoFAQRCode, showCurrentTime };
