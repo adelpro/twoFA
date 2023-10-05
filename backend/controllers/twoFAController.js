@@ -1,4 +1,5 @@
 const speakeasy = require("speakeasy");
+const {authenticator} = require('otplib');
 
 const { users } = require("../data");
 const { generateTwoFAQRCode } = require("../utils/utils");
@@ -20,13 +21,14 @@ const enable = async (req, res) => {
   }
 
   // Generate OTP secret
-  const secret = speakeasy.generateSecret();
+  const secret = authenticator.generateSecret();
 
   // Store the secret in the user object
-  users[userIndex].otpSecret = secret.base32;
-  console.log("new secret generated: ", secret.base32);
+  users[userIndex].otpSecret = secret;
+  console.log("new secret generated: ", secret);
+
   // Return QR code URL and secret
-  const qrcode = await generateTwoFAQRCode(secret.base32);
+  const qrcode = await generateTwoFAQRCode(users[userIndex].id, secret);
   res.json({ qrcode });
 };
 

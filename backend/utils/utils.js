@@ -1,10 +1,12 @@
 const speakeasy = require("speakeasy");
+const {authenticator} = require("otplib");
 const qrcode = require("qrcode");
-async function generateTwoFAQRCode(secret) {
-  const otpauthURL = speakeasy.otpauthURL({
+async function generateTwoFAQRCode(id, secret) {
+/*   const otpauthURL = speakeasy.otpauthURL({
     secret,
     label: "2FA-auth",
-  });
+  }); */
+  const otpauthURL = authenticator.keyuri(id, "2FA-auth", secret);
   const result = await qrcode.toDataURL(otpauthURL);
   return result;
 }
