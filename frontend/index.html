@@ -5,69 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2FA Activation Setup</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f7f7f7;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        form {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        button[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <script src="client.min.js" defer></script>
+    <script src="javascript.js" defer></script>
 </head>
 
 <body>
@@ -77,6 +17,9 @@
         <img src="" alt="QR Code" id="qrCodeImage" />
     </div>
     <div class="container">
+        <h2 id="trusted"></h2>
+    </div>
+    <div class="container">
         <h1>Step 2: Verify OTP</h1>
         <form id="otpForm">
             <label for="otp">Enter OTP:</label>
@@ -84,55 +27,6 @@
             <button type="submit">Verify</button>
         </form>
     </div>
-
-    <script>
-        fetch('http://localhost:3500/2fa/enable', {
-            method: 'POST',
-            body: JSON.stringify({ id: "1" }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-
-                } else {
-                    throw new Error('Failed to fetch QR code image');
-                }
-            })
-            .then(data => {
-                const qrCodeImage = document.getElementById('qrCodeImage');
-                qrCodeImage.src = data.qrcode;
-            })
-            .catch(error => {
-                console.error('Error:', error?.message);
-            });
-
-        document.getElementById('otpForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const otpInput = document.getElementById('otp');
-            const otpValue = otpInput.value;
-            fetch("http://localhost:3500/2fa/verify", {
-                method: 'POST',
-                body: JSON.stringify({ id: '1', otp: otpValue }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('OTP verification successful');
-                    } else {
-                        console.log(response)
-                        console.error('OTP verification failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error?.message);
-                });
-        });
-    </script>
 </body>
 
 </html>

@@ -7,6 +7,15 @@ const getUserIndexById = (id) => {
   return users.findIndex((user) => user.id.toString() === id.toString());
 };
 
+const isTrusted = (id, fingerprint) => {
+  const userIndex = getUserIndexById(id);
+  if (userIndex === -1) {
+    return false;
+  }
+  const user = users[userIndex];
+  return user.trusted.includes(fingerprint);
+};
+
 // @desc ENABLE 2FA
 // @Route POST /2fa/enable
 // @Access Public
@@ -64,6 +73,16 @@ const verify = async (req, res) => {
   res.json({ msg: "OTP code verified successfully" });
 };
 
+// @desc TRUSTED 2FA
+// @Route POST /2fa/trusted
+// @Access Public
+const trusted = async (req, res) => {
+  const { fingerprint, id } = req.body;
+  console.log({ fingerprint, id });
+  const trusted = isTrusted(id, fingerprint);
+  res.json({ trusted });
+};
+
 // @desc DISABLE 2FA
 // @Route POST /2fa/disable
 // @Access Public
@@ -80,4 +99,4 @@ const disable = async (req, res) => {
   res.json({ msg: "2FA disabled successfully" });
 };
 
-module.exports = { enable, verify, disable };
+module.exports = { enable, verify, disable, trusted };
