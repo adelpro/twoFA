@@ -1,10 +1,9 @@
 const { authenticator } = require("otplib");
-const speakeasy = require("speakeasy");
 const qrcode = require("qrcode");
 async function generateTwoFAQRCode(id, secret) {
-  const label = id;
-  const otpauthURL = speakeasy.otpauthURL({});
-  const result = await qrcode.toDataURL(secret);
-  return result;
+  const otpauthURL = authenticator.keyuri(id, "2FA", secret);
+  console.log({ otpauthURL });
+  let imagePath = await qrcode.toDataURL(otpauthURL);
+  return imagePath;
 }
 module.exports = { generateTwoFAQRCode };

@@ -1,6 +1,4 @@
-const speakeasy = require("speakeasy");
-const {authenticator} = require('otplib');
-
+const { authenticator } = require("otplib");
 const { users } = require("../data");
 const { generateTwoFAQRCode } = require("../utils/utils");
 
@@ -45,12 +43,20 @@ const verify = async (req, res) => {
 
   // Validate OTP code
   const user = users[userIndex];
-  const isValid = speakeasy.totp.verify({
-    secret: user.otpSecret,
-    encoding: "base32",
-    token: otp.toString(),
-    window: 5, //working: 1000000
-  });
+  let isValid = false;
+  try {
+    authenticator.options = {
+      window: 1,
+    };
+    console.log(authenticator.options);
+    console.log({ secret: user.otpSecret, token: otp });
+    isValid = authenticator.verify({
+      secret: user.otpSecret,
+      token: otp,
+    });
+  } catch (err) {
+    console.log({ verify_error: err });
+  }
   console.log({ isValid, otp, user });
   if (!isValid) {
     return res
