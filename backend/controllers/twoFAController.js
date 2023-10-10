@@ -48,8 +48,6 @@ const verify = async (req, res) => {
     authenticator.options = {
       window: 1,
     };
-    console.log(authenticator.options);
-    console.log({ secret: user.otpSecret, token: otp });
     isValid = authenticator.verify({
       secret: user.otpSecret,
       token: otp,
@@ -57,7 +55,6 @@ const verify = async (req, res) => {
   } catch (err) {
     console.log({ verify_error: err });
   }
-  console.log({ isValid, otp, user });
   if (!isValid) {
     return res
       .status(400)
