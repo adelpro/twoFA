@@ -34,20 +34,15 @@ function getFingerprint() {
   // Initialize ClientJS
   const client = new ClientJS();
 
-  // Get browser information
-  const browserInfo = client.getBrowser();
-
   // Get fingerprint
   const fingerprint = client.getFingerprint();
 
   // Log the results to the console (you can use these values as needed)
-  console.log("Browser Info:", browserInfo);
   console.log("fingerprint:", fingerprint);
 }
 
 // Trusted device
 async function trustedDeviceCheck() {
-  console.log("trusted device check");
   const client = new ClientJS();
 
   // Get fingerprint
@@ -69,8 +64,15 @@ async function trustedDeviceCheck() {
     })
     .then((data) => {
       const trusted = document.getElementById("trusted");
-      console.log(data);
-      trusted.innerText = JSON.stringify(data);
+      if (data?.trusted) {
+        trusted.innerText = "Trusted device";
+        trusted.classList.add("trusted");
+        trusted.classList.remove("untrusted");
+      } else {
+        trusted.innerText = "Untrusted device";
+        trusted.classList.add("untrusted");
+        trusted.classList.remove("trusted");
+      }
     })
     .catch((error) => {
       console.error("Error:", error?.message);
@@ -79,16 +81,21 @@ async function trustedDeviceCheck() {
 // Verify OTP
 document.getElementById("otpForm").addEventListener("submit", function (e) {
   e.preventDefault();
+  const client = new ClientJS();
+
+  // Get fingerprint
+  const fingerprint = client.getFingerprint();
   const otpInput = document.getElementById("otp");
   const otpValue = otpInput.value;
   fetch("http://localhost:3500/2fa/verify", {
     method: "POST",
-    body: JSON.stringify({ id: "1", otp: otpValue }),
+    body: JSON.stringify({ id: "1", otp: otpValue, fingerprint }),
     headers: {
       "Content-Type": "application/json",
     },
   })
     .then((response) => {
+      trustedDeviceCheck();
       if (response.ok) {
         console.log("OTP verification successful");
       } else {

@@ -16,11 +16,14 @@ function isTrusted(id, fingerprirnt) {
   try {
     isValid = authenticator.verify({
       token: fingerprirnt,
-      secret: user.otpSecret,
+      secret: user.TFASecret,
     });
   } catch (error) {
     console.log(error);
   }
   return isValid;
 }
-module.exports = { generateTwoFAQRCode };
+function getUserIndexById(id) {
+  return users.findIndex((user) => user.id.toString() === id.toString());
+}
+module.exports = { generateTwoFAQRCode, isTrusted, getUserIndexById };

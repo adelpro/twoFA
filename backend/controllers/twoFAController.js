@@ -1,20 +1,10 @@
 const { authenticator } = require("otplib");
 const { users } = require("../data");
-const { generateTwoFAQRCode } = require("../utils/utils");
-
-// Function to check if a user exists
-const getUserIndexById = (id) => {
-  return users.findIndex((user) => user.id.toString() === id.toString());
-};
-
-const isTrusted = (id, fingerprint) => {
-  const userIndex = getUserIndexById(id);
-  if (userIndex === -1) {
-    return false;
-  }
-  const user = users[userIndex];
-  return user.trusted.includes(fingerprint);
-};
+const {
+  generateTwoFAQRCode,
+  isTrusted,
+  getUserIndexById,
+} = require("../utils/utils");
 
 // @desc ENABLE 2FA
 // @Route POST /2fa/enable
@@ -26,16 +16,21 @@ const enable = async (req, res) => {
   if (userIndex === -1) {
     return res.status(400).json({ msg: "User not found" });
   }
+  const user = users[userIndex];
 
-  // Generate OTP secret
-  const secret = authenticator.generateSecret();
+  // Generate a new TFA secret (if its null)
+  if (!user.TFASecret) {
+    // Generate TFA secret
+    const secret = authenticator.generateSecret();
 
-  // Store the secret in the user object
-  users[userIndex].otpSecret = secret;
-  console.log("new secret generated: ", secret);
+    // Store the secret in the user object
+    user.TFASecret = secret;
+    console.log("new secret generated: ", user.TFASecret);
+  }
+  console.log("Using stored secret: ", user.TFASecret);
 
   // Return QR code URL and secret
-  const qrcode = await generateTwoFAQRCode(users[userIndex].id, secret);
+  const qrcode = await generateTwoFAQRCode(users[userIndex].id, user.TFASecret);
   res.json({ qrcode });
 };
 
@@ -43,8 +38,10 @@ const enable = async (req, res) => {
 // @Route POST /2fa/verify
 // @Access Public
 const verify = async (req, res) => {
-  const { id, otp } = req.body;
-
+  const { id, otp, fingerprint } = req.body;
+  if (!id || !otp || !fingerprint) {
+    return res.status(400).json({ msg: "Request error" });
+  }
   const userIndex = getUserIndexById(id);
   if (userIndex === -1) {
     return res.status(400).json({ msg: "User not found" });
@@ -58,7 +55,7 @@ const verify = async (req, res) => {
       window: 1,
     };
     isValid = authenticator.verify({
-      secret: user.otpSecret,
+      secret: user.TFASecret,
       token: otp,
     });
   } catch (err) {
@@ -70,6 +67,10 @@ const verify = async (req, res) => {
       .json({ msg: "OTP code is invalid or expired. Please try again." });
   }
 
+  // Add Device To trusted list
+  if (!user?.trusted.includes(fingerprint)) {
+    user?.trusted.push(fingerprint);
+  }
   res.json({ msg: "OTP code verified successfully" });
 };
 
@@ -78,7 +79,6 @@ const verify = async (req, res) => {
 // @Access Public
 const trusted = async (req, res) => {
   const { fingerprint, id } = req.body;
-  console.log({ fingerprint, id });
   const trusted = isTrusted(id, fingerprint);
   res.json({ trusted });
 };
@@ -95,7 +95,7 @@ const disable = async (req, res) => {
   }
 
   // Delete OTP secret
-  users[userIndex].otpSecret = null;
+  users[userIndex].TFASecret = null;
   res.json({ msg: "2FA disabled successfully" });
 };
 
